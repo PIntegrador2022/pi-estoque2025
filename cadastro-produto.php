@@ -37,63 +37,106 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Cadastro de Produto</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <!-- Seu CSS personalizado -->
     <link rel="stylesheet" href="css/style.css">
 </head>
 
 <body>
-    <div class="container">
-        <!-- Sidebar -->
-        <!-- Sidebar -->
-        <?php include_once 'includes/sidebar.php'; ?>
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Sidebar -->
+            <?php include_once 'includes/sidebar.php'; ?>
 
-        <!-- Conteúdo Principal -->
-        <main class="content">
+            <!-- Conteúdo Principal -->
+            <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4 py-4">
+                <!-- Cabeçalho -->
+                <header class="d-flex justify-content-between align-items-center mb-4">
+                    <!-- Botão de menu (móvel) -->
+                    <button class="btn btn-outline-dark d-md-none me-2" id="sidebarToggle">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                    <div>
+                        <img src="https://bluefocus.com.br/sites/default/files/styles/medium/public/estoque.png?itok=1yVi8VcO" alt="Logo" width="50">
+                    </div>
+                    <div class="dropdown">
+                        <a href="#" class="d-flex align-items-center text-decoration-none dropdown-toggle text-dark" id="dropdownUser" data-bs-toggle="dropdown" aria-expanded="false">
+                            <span class="fw-bold"><?= htmlspecialchars($_SESSION['nome']) ?></span>
+                        </a>
+                        <ul class="dropdown-menu text-small shadow" aria-labelledby="dropdownUser">
+                            <li><a class="dropdown-item" href="editar-perfil.php">Editar Perfil</a></li>
+                            <li>
+                                <hr class="dropdown-divider">
+                            </li>
+                            <li><a class="dropdown-item" href="logout.php">Sair</a></li>
+                        </ul>
+                    </div>
+                </header>
 
-            <!-- Cabeçalho -->
-            <header class="header">
-                <div class="logo">
-                    <img src="https://bluefocus.com.br/sites/default/files/styles/medium/public/estoque.png?itok=1yVi8VcO" alt="Logo" width="50">
-                </div>
-                <div class="user-info">
-                    <span class="user-name">Olá, <?= htmlspecialchars($usuario_logado['nome']) ?></span>
-                    <div class="dropdown-menu">
-                        <a href="editar-perfil.php">Editar Perfil</a>
-                        <a href="logout.php">Sair</a>
+                <h2 class="mb-4">Cadastro de Produto</h2>
+
+                <div class="card shadow mb-4">
+                    <div class="card-body">
+                        <form method="POST">
+                            <div class="mb-3">
+                                <label for="nome" class="form-label">Nome do Produto <span class="text-danger">*</span></label>
+                                <input type="text" name="nome" id="nome" class="form-control" required>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="descricao" class="form-label">Descrição</label>
+                                <textarea name="descricao" id="descricao" class="form-control" rows="3"></textarea>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="quantidade" class="form-label">Quantidade <span class="text-danger">*</span></label>
+                                    <input type="number" name="quantidade" id="quantidade" class="form-control" required>
+                                </div>
+
+                                <div class="col-md-6 mb-3">
+                                    <label for="preco" class="form-label">Preço (R$) <span class="text-danger">*</span></label>
+                                    <input type="number" step="0.01" name="preco" id="preco" class="form-control" required>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="estoque_minimo" class="form-label">Estoque Mínimo <span class="text-danger">*</span></label>
+                                    <input type="number" name="estoque_minimo" id="estoque_minimo" class="form-control" value="10" min="1" required>
+                                </div>
+
+                                <div class="col-md-6 mb-3">
+                                    <label for="categoria_id" class="form-label">Categoria <span class="text-danger">*</span></label>
+                                    <select name="categoria_id" id="categoria_id" class="form-select" required>
+                                        <option value="">Selecione uma categoria</option>
+                                        <?php
+                                        $stmt = $pdo->query("SELECT * FROM categorias");
+                                        $categorias = $stmt->fetchAll(PDO::FETCH_ASSOC);
+                                        foreach ($categorias as $categoria): ?>
+                                            <option value="<?= $categoria['id'] ?>"><?= htmlspecialchars($categoria['nome']) ?></option>
+                                        <?php endforeach; ?>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save"></i> Cadastrar Produto
+                            </button>
+                            <a href="listagem-produtos.php" class="btn btn-secondary">Cancelar</a>
+                        </form>
                     </div>
                 </div>
-                <button class="menu-toggle" id="menuToggle">&#9776;</button>
-            </header>
-
-            <!-- Seleção de Categoria -->
-            <label for="categoria_id">Categoria:</label>
-            <select name="categoria_id" id="categoria_id" required>
-                <option value="">Selecione uma categoria</option>
-                <?php
-                $stmt = $pdo->query("SELECT * FROM categorias");
-                $categorias = $stmt->fetchAll(PDO::FETCH_ASSOC);
-                foreach ($categorias as $categoria): ?>
-                    <option value="<?= $categoria['id'] ?>"><?= htmlspecialchars($categoria['nome']) ?></option>
-                <?php endforeach; ?>
-            </select>
-
-            <h2>Cadastro de Produto</h2>
-            <form method="POST">
-                <input type="text" name="nome" placeholder="Nome do Produto" required>
-                <textarea name="descricao" placeholder="Descrição do Produto"></textarea>
-                <input type="number" name="quantidade" placeholder="Quantidade" required>
-                <input type="number" step="0.01" name="preco" placeholder="Preço" required>
-                <label for="estoque_minimo">Estoque Mínimo:</label>
-<input type="number" name="estoque_minimo" id="estoque_minimo" value="<?= isset($produto['estoque_minimo']) ? $produto['estoque_minimo'] : 10 ?>" min="1" required>
-                <button type="submit">Cadastrar Produto</button>
-            </form>
-        </main>
+            </main>
+        </div>
     </div>
 
-
-
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="js/scripts.js"></script>
-
-
 </body>
 
 </html>

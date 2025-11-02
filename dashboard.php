@@ -48,80 +48,160 @@ $total_baixo_estoque = count($produtos_baixo_estoque);
 
 <!DOCTYPE html>
 <html lang="pt-br">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome (ícones) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <!-- Seu CSS personalizado (mantém seu style.css) -->
     <link rel="stylesheet" href="css/style.css">
 </head>
-<body>
-    <div class="container">
-        <!-- Sidebar -->
-        <?php include_once 'includes/sidebar.php'; ?>
 
-        <!-- Conteúdo Principal -->
-        <main class="content">
-            <!-- Cabeçalho -->
-            <header class="header">
-                <div class="logo">
-                    <img src="https://bluefocus.com.br/sites/default/files/styles/medium/public/estoque.png?itok=1yVi8VcO" alt="Logo" width="50">
-                </div>
-                <div class="user-info">
-                    <span class="user-name">Olá, <?= htmlspecialchars($_SESSION['nome']) ?></span>
-                    <div class="dropdown-menu">
-                        <a href="editar-perfil.php">Editar Perfil</a>
-                        <a href="logout.php">Sair</a>
+<body>
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Sidebar -->
+            <?php include_once 'includes/sidebar.php'; ?>
+
+            <!-- Conteúdo Principal -->
+            <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4 py-4">
+                <!-- Cabeçalho -->
+                <header class="d-flex justify-content-between align-items-center mb-4">
+                    <!-- Botão de menu (móvel) -->
+                    <button class="btn btn-outline-dark d-md-none me-2" id="sidebarToggle">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                    <div>
+                        <img src="https://bluefocus.com.br/sites/default/files/styles/medium/public/estoque.png?itok=1yVi8VcO" alt="Logo" width="50">
+                    </div>
+                    <div class="dropdown">
+                        <a href="#" class="d-flex align-items-center text-decoration-none dropdown-toggle text-dark" id="dropdownUser" data-bs-toggle="dropdown" aria-expanded="false">
+                            <span class="fw-bold"><?= htmlspecialchars($_SESSION['nome']) ?></span>
+                        </a>
+                        <ul class="dropdown-menu text-small shadow" aria-labelledby="dropdownUser">
+                            <li><a class="dropdown-item" href="editar-perfil.php">Editar Perfil</a></li>
+                            <li>
+                                <hr class="dropdown-divider">
+                            </li>
+                            <li><a class="dropdown-item" href="logout.php">Sair</a></li>
+                        </ul>
+                    </div>
+                </header>
+
+                <h2 class="mb-4">Painel de Controle</h2>
+
+                <!-- Cards do Dashboard -->
+                <div class="row g-4">
+                    <!-- Card: Total de Usuários -->
+                    <div class="col-md-6 col-lg-3">
+                        <div class="card border-left-primary shadow h-100 py-2">
+                            <div class="card-body">
+                                <div class="row no-gutters align-items-center">
+                                    <div class="col mr-2">
+                                        <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">Total de Usuários</div>
+                                        <div class="h5 mb-0 font-weight-bold text-gray-800"><?= $total_usuarios ?></div>
+                                    </div>
+                                    <div class="col-auto">
+                                        <i class="fas fa-users fa-2x text-gray-300"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Card: Total de Produtos -->
+                    <div class="col-md-6 col-lg-3">
+                        <div class="card border-left-success shadow h-100 py-2">
+                            <div class="card-body">
+                                <div class="row no-gutters align-items-center">
+                                    <div class="col mr-2">
+                                        <div class="text-xs font-weight-bold text-success text-uppercase mb-1">Total de Produtos</div>
+                                        <div class="h5 mb-0 font-weight-bold text-gray-800"><?= $total_produtos ?></div>
+                                    </div>
+                                    <div class="col-auto">
+                                        <i class="fas fa-boxes fa-2x text-gray-300"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Card: Valor Total -->
+                    <div class="col-md-6 col-lg-3">
+                        <div class="card border-left-info shadow h-100 py-2">
+                            <div class="card-body">
+                                <div class="row no-gutters align-items-center">
+                                    <div class="col mr-2">
+                                        <div class="text-xs font-weight-bold text-info text-uppercase mb-1">Valor Total dos Produtos</div>
+                                        <div class="h5 mb-0 font-weight-bold text-gray-800">R$ <?= $valor_total_produtos ?></div>
+                                    </div>
+                                    <div class="col-auto">
+                                        <i class="fas fa-dollar-sign fa-2x text-gray-300"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Card: Estoque Baixo -->
+                    <div class="col-md-6 col-lg-3">
+                        <div class="card border-left-warning shadow h-100 py-2">
+                            <div class="card-body">
+                                <div class="row no-gutters align-items-center">
+                                    <div class="col mr-2">
+                                        <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">Estoque Baixo</div>
+                                        <div class="h5 mb-0 font-weight-bold text-gray-800">
+                                            <?php if ($total_baixo_estoque > 0): ?>
+                                                <?= $total_baixo_estoque ?> produto(s)
+                                            <?php else: ?>
+                                                Nenhum
+                                            <?php endif; ?>
+                                        </div>
+                                    </div>
+                                    <div class="col-auto">
+                                        <i class="fas fa-exclamation-triangle fa-2x text-gray-300"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
-                <button class="menu-toggle" id="menuToggle">&#9776;</button>
-            </header>
 
-            <!-- Cards do Dashboard -->
-            <h2>Painel de Controle</h2>
-            <div class="cards-container">
-                <div class="card">
-                    <h3>Total de Usuários</h3>
-                    <p><?= $total_usuarios ?></p>
-                </div>
-                <div class="card">
-                    <h3>Total de Produtos</h3>
-                    <p><?= $total_produtos ?></p>
-                </div>
-                <div class="card">
-                    <h3>Valor Total dos Produtos</h3>
-                    <p>R$ <?= $valor_total_produtos ?></p>
-                </div>
-
-                <!-- Card de Alerta de Estoque Baixo (Visível no Desktop) -->
-                <div class="card desktop-card">
-                    <h3>Alerta de Estoque Baixo</h3>
-                    <?php if ($total_baixo_estoque > 0): ?>
-                        <ul>
-                            <?php foreach ($produtos_baixo_estoque as $produto): ?>
-                                <li>
-                                    <?= htmlspecialchars($produto['nome']) ?> 
-                                    (Quantidade: <?= $produto['quantidade'] ?>/<?= $produto['estoque_minimo'] ?>)
-                                </li>
-                            <?php endforeach; ?>
-                        </ul>
-                    <?php else: ?>
-                        <p>Nenhum produto com estoque baixo.</p>
-                    <?php endif; ?>
-                </div>
-
-                <!-- Mensagem de Alerta de Estoque Baixo (Visível no Mobile) -->
-                <div class="card mobile-message">
-                    <h3>Alerta de Estoque Baixo</h3>
-                    <?php if ($total_baixo_estoque > 0): ?>
-                        <p>Há <?= $total_baixo_estoque ?> produto(s) com estoque baixo.</p>
-                    <?php else: ?>
-                        <p>Nenhum produto com estoque baixo.</p>
-                    <?php endif; ?>
-                </div>
-            </div>
-        </main>
+                <!-- Lista detalhada de produtos com estoque baixo (opcional, abaixo dos cards) -->
+                <?php if ($total_baixo_estoque > 0): ?>
+                    <div class="row mt-4">
+                        <div class="col">
+                            <div class="card shadow mb-4">
+                                <div class="card-header py-3">
+                                    <h6 class="m-0 font-weight-bold text-primary">Produtos com Estoque Baixo</h6>
+                                </div>
+                                <div class="card-body">
+                                    <ul class="list-group">
+                                        <?php foreach ($produtos_baixo_estoque as $produto): ?>
+                                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                                <?= htmlspecialchars($produto['nome']) ?>
+                                                <span class="badge bg-warning text-dark">
+                                                    <?= $produto['quantidade'] ?> / <?= $produto['estoque_minimo'] ?>
+                                                </span>
+                                            </li>
+                                        <?php endforeach; ?>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                <?php endif; ?>
+            </main>
+        </div>
     </div>
 
+    <!-- Bootstrap JS (opcional, mas necessário para dropdowns) -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="js/scripts.js"></script>
 </body>
+
 </html>

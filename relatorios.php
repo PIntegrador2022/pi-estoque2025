@@ -11,11 +11,13 @@ if (!isset($_SESSION['usuario_id'])) {
 $nivel_acesso = $_SESSION['nivel_acesso'];
 
 // Funções de formatação
-function formatarValorMonetario($valor) {
+function formatarValorMonetario($valor)
+{
     return 'R$ ' . number_format($valor, 2, ',', '.');
 }
 
-function formatarNumeroInteiro($numero) {
+function formatarNumeroInteiro($numero)
+{
     return number_format($numero, 0, ',', '.');
 }
 
@@ -29,7 +31,6 @@ $resultados = [];
 if ($data_inicio && $data_fim && $tipo_relatorio) {
     switch ($tipo_relatorio) {
         case 'consumo':
-            // Consulta para consumo
             $stmt = $pdo->prepare("
                 SELECT 
                     p.nome AS produto,
@@ -45,7 +46,6 @@ if ($data_inicio && $data_fim && $tipo_relatorio) {
             break;
 
         case 'reposicao':
-            // Consulta para reposição
             $stmt = $pdo->prepare("
                 SELECT 
                     p.nome AS produto,
@@ -61,7 +61,6 @@ if ($data_inicio && $data_fim && $tipo_relatorio) {
             break;
 
         case 'tendencias':
-            // Consulta para tendências temporais (formato MM-YYYY)
             $stmt = $pdo->prepare("
                 SELECT 
                     DATE_FORMAT(m.data_movimentacao, '%m-%Y') AS mes,
@@ -76,7 +75,6 @@ if ($data_inicio && $data_fim && $tipo_relatorio) {
             break;
 
         case 'valor':
-            // Consulta para valor total movimentado
             $stmt = $pdo->prepare("
                 SELECT 
                     p.nome AS produto,
@@ -96,178 +94,367 @@ if ($data_inicio && $data_fim && $tipo_relatorio) {
 
 <!DOCTYPE html>
 <html lang="pt-br">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Relatórios</title>
-    <link rel="stylesheet" href="css/style.css">
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Seu CSS personalizado -->
+    <link rel="stylesheet" href="css/style.css">
 </head>
+
 <body>
-    <div class="container">
-        <!-- Sidebar -->
-        <?php include_once 'includes/sidebar.php'; ?>
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Sidebar -->
+            <?php include_once 'includes/sidebar.php'; ?>
 
-        <!-- Conteúdo Principal -->
-        <main class="content">
-            <!-- Cabeçalho -->
-            <header class="header">
-                <div class="logo">
-                    <img src="https://bluefocus.com.br/sites/default/files/styles/medium/public/estoque.png?itok=1yVi8VcO" alt="Logo" width="50">
-                </div>
-                <div class="user-info">
-                    <span class="user-name"><?= htmlspecialchars($_SESSION['nome']) ?></span>
-                    <div class="dropdown-menu">
-                        <a href="editar-perfil.php">Editar Perfil</a>
-                        <a href="logout.php">Sair</a>
+            <!-- Conteúdo Principal -->
+            <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4 py-4">
+                <!-- Cabeçalho -->
+                <header class="d-flex justify-content-between align-items-center mb-4">
+                    <!-- Botão de menu (móvel) -->
+                    <button class="btn btn-outline-dark d-md-none me-2" id="sidebarToggle">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                    <div>
+                        <img src="https://bluefocus.com.br/sites/default/files/styles/medium/public/estoque.png?itok=1yVi8VcO" alt="Logo" width="50">
                     </div>
-                </div>
-                <button class="menu-toggle" id="menuToggle">&#9776;</button>
-            </header>
+                    <div class="dropdown">
+                        <a href="#" class="d-flex align-items-center text-decoration-none dropdown-toggle text-dark" id="dropdownUser" data-bs-toggle="dropdown" aria-expanded="false">
+                            <span class="fw-bold"><?= htmlspecialchars($_SESSION['nome']) ?></span>
+                        </a>
+                        <ul class="dropdown-menu text-small shadow" aria-labelledby="dropdownUser">
+                            <li><a class="dropdown-item" href="editar-perfil.php">Editar Perfil</a></li>
+                            <li>
+                                <hr class="dropdown-divider">
+                            </li>
+                            <li><a class="dropdown-item" href="logout.php">Sair</a></li>
+                        </ul>
+                    </div>
+                </header>
 
-            <!-- Área de Scroll -->
-            <div class="scrollable-content">
-                <!-- Título da Página -->
-                <h2>Relatórios</h2>
+                <h2 class="mb-4">Relatórios de Movimentação</h2>
 
                 <!-- Formulário de Filtros -->
-                <form method="GET" style="margin-bottom: 20px;">
-                    <label for="data_inicio">Data Inicial:</label>
-                    <input type="date" name="data_inicio" id="data_inicio" required value="<?= htmlspecialchars($data_inicio ?? '') ?>">
+                <div class="card shadow mb-4">
+                    <div class="card-header py-3">
+                        <h6 class="m-0 font-weight-bold text-primary">Filtros</h6>
+                    </div>
+                    <div class="card-body">
+                        <form method="GET" class="row g-3">
+                            <div class="col-md-4">
+                                <label for="data_inicio" class="form-label">Data Inicial <span class="text-danger">*</span></label>
+                                <input type="date" name="data_inicio" id="data_inicio" class="form-control" required value="<?= htmlspecialchars($data_inicio ?? '') ?>">
+                            </div>
+                            <div class="col-md-4">
+                                <label for="data_fim" class="form-label">Data Final <span class="text-danger">*</span></label>
+                                <input type="date" name="data_fim" id="data_fim" class="form-control" required value="<?= htmlspecialchars($data_fim ?? '') ?>">
+                            </div>
+                            <div class="col-md-4">
+                                <label for="tipo_relatorio" class="form-label">Tipo de Relatório <span class="text-danger">*</span></label>
+                                <select name="tipo_relatorio" id="tipo_relatorio" class="form-select" required>
+                                    <option value="consumo" <?= $tipo_relatorio === 'consumo' ? 'selected' : '' ?>>Consumo (Saídas)</option>
+                                    <option value="reposicao" <?= $tipo_relatorio === 'reposicao' ? 'selected' : '' ?>>Reposição (Entradas)</option>
+                                    <option value="tendencias" <?= $tipo_relatorio === 'tendencias' ? 'selected' : '' ?>>Tendências Temporais</option>
+                                    <option value="valor" <?= $tipo_relatorio === 'valor' ? 'selected' : '' ?>>Valor Total Movimentado</option>
+                                </select>
+                            </div>
+                            <div class="col-12">
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-chart-line"></i> Gerar Relatório
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
 
-                    <label for="data_fim">Data Final:</label>
-                    <input type="date" name="data_fim" id="data_fim" required value="<?= htmlspecialchars($data_fim ?? '') ?>">
-
-                    <label for="tipo_relatorio">Tipo de Relatório:</label>
-                    <select name="tipo_relatorio" id="tipo_relatorio" required>
-                        <option value="consumo" <?= $tipo_relatorio === 'consumo' ? 'selected' : '' ?>>Consumo</option>
-                        <option value="reposicao" <?= $tipo_relatorio === 'reposicao' ? 'selected' : '' ?>>Reposição</option>
-                        <option value="tendencias" <?= $tipo_relatorio === 'tendencias' ? 'selected' : '' ?>>Tendências Temporais</option>
-                        <option value="valor" <?= $tipo_relatorio === 'valor' ? 'selected' : '' ?>>Valor Total Movimentado</option>
-                    </select>
-
-                    <button type="submit">Gerar Relatório</button>
-                </form>
-
-                <!-- Área de Resultados -->
+                <!-- Resultados -->
                 <div id="resultados">
                     <?php if (!empty($resultados)): ?>
-                        <h3>Resultados do Relatório</h3>
+                        <div class="card shadow mb-4">
+                            <div class="card-header py-3">
+                                <h6 class="m-0 font-weight-bold text-primary">
+                                    Resultados do Relatório
+                                    <?php
+                                    $titulos = [
+                                        'consumo' => 'Consumo por Produto',
+                                        'reposicao' => 'Reposição por Produto',
+                                        'tendencias' => 'Tendências Temporais',
+                                        'valor' => 'Valor Movimentado por Produto'
+                                    ];
+                                    echo isset($titulos[$tipo_relatorio]) ? $titulos[$tipo_relatorio] : '';
+                                    ?>
+                                </h6>
+                            </div>
+                            <div class="card-body">
+                                <!-- Tabela -->
+                                <div class="table-responsive mb-4">
+                                    <table class="table table-bordered table-hover">
+                                        <thead class="table-light">
+                                            <tr>
+                                                <?php if ($tipo_relatorio === 'tendencias'): ?>
+                                                    <th>Mês (MM-YYYY)</th>
+                                                    <th>Total Movimentado</th>
+                                                <?php else: ?>
+                                                    <th>Produto</th>
+                                                    <th>Quantidade</th>
+                                                <?php endif; ?>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <?php foreach ($resultados as $resultado): ?>
+                                                <tr>
+                                                    <?php if ($tipo_relatorio === 'tendencias'): ?>
+                                                        <td><?= htmlspecialchars($resultado['mes']) ?></td>
+                                                        <td><?= formatarNumeroInteiro($resultado['total_movimentado']) ?></td>
+                                                    <?php elseif ($tipo_relatorio === 'valor'): ?>
+                                                        <td><?= htmlspecialchars($resultado['produto']) ?></td>
+                                                        <td><?= formatarValorMonetario($resultado['valor_total']) ?></td>
+                                                    <?php else: ?>
+                                                        <td><?= htmlspecialchars($resultado['produto']) ?></td>
+                                                        <td><?= formatarNumeroInteiro($resultado['total_consumido'] ?? $resultado['total_reposto']) ?></td>
+                                                    <?php endif; ?>
+                                                </tr>
+                                            <?php endforeach; ?>
+                                        </tbody>
+                                    </table>
+                                </div>
 
-                        <!-- Tabela de Resultados -->
-                        <table>
-                            <thead>
-                                <tr>
-                                    <?php if ($tipo_relatorio === 'tendencias'): ?>
-                                        <th>Mês</th>
-                                        <th>Total Movimentado</th>
-                                    <?php else: ?>
-                                        <th>Produto</th>
-                                        <th>Quantidade</th>
-                                    <?php endif; ?>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <?php foreach ($resultados as $resultado): ?>
-                                    <tr>
-                                        <?php if ($tipo_relatorio === 'tendencias'): ?>
-                                            <td><?= $resultado['mes'] ?></td>
-                                            <td><?= formatarNumeroInteiro($resultado['total_movimentado']) ?></td>
-                                        <?php elseif ($tipo_relatorio === 'valor'): ?>
-                                            <td><?= htmlspecialchars($resultado['produto']) ?></td>
-                                            <td><?= formatarValorMonetario($resultado['valor_total']) ?></td>
-                                        <?php else: ?>
-                                            <td><?= htmlspecialchars($resultado['produto']) ?></td>
-                                            <td><?= formatarNumeroInteiro($resultado['total_consumido'] ?? $resultado['total_reposto']) ?></td>
-                                        <?php endif; ?>
-                                    </tr>
-                                <?php endforeach; ?>
-                            </tbody>
-                        </table>
+                                <!-- Gráfico -->
+                                <div class="mt-4">
+                                    <canvas id="graficoRelatorio" height="120"></canvas>
+                                </div>
 
-                        <!-- Gráfico -->
-                        <?php if ($tipo_relatorio !== 'tendencias'): ?>
-                            <canvas id="graficoRelatorio" width="400" height="200"></canvas>
-                            <script>
-                                document.addEventListener('DOMContentLoaded', function () {
-                                    const ctx = document.getElementById('graficoRelatorio').getContext('2d');
-                                    const graficoRelatorio = new Chart(ctx, {
-                                        type: 'bar',
-                                        data: {
-                                            labels: [<?php echo "'" . implode("','", array_column($resultados, 'produto')) . "'"; ?>],
-                                            datasets: [{
-                                                label: 'Quantidade',
-                                                data: [
-                                                    <?php
-                                                    if ($tipo_relatorio === 'reposicao') {
-                                                        echo implode(',', array_column($resultados, 'total_reposto'));
-                                                    } elseif ($tipo_relatorio === 'consumo') {
-                                                        echo implode(',', array_column($resultados, 'total_consumido'));
-                                                    } elseif ($tipo_relatorio === 'valor') {
-                                                        echo implode(',', array_column($resultados, 'valor_total'));
-                                                    }
-                                                    ?>
-                                                ],
-                                                backgroundColor: 'rgba(75, 192, 192, 0.2)',
-                                                borderColor: 'rgba(75, 192, 192, 1)',
-                                                borderWidth: 1
-                                            }]
-                                        },
-                                        options: {
-                                            scales: {
-                                                y: {
-                                                    beginAtZero: true
-                                                }
-                                            }
-                                        }
-                                    });
-                                });
-                            </script>
-                        <?php elseif ($tipo_relatorio === 'tendencias'): ?>
-                            <canvas id="graficoTendencias" width="400" height="200"></canvas>
-                            <script>
-                                document.addEventListener('DOMContentLoaded', function () {
-                                    const ctx = document.getElementById('graficoTendencias').getContext('2d');
-                                    const graficoTendencias = new Chart(ctx, {
-                                        type: 'line',
-                                        data: {
-                                            labels: [<?php echo "'" . implode("','", array_column($resultados, 'mes')) . "'"; ?>],
-                                            datasets: [{
-                                                label: 'Total Movimentado',
-                                                data: [<?php echo implode(',', array_column($resultados, 'total_movimentado')); ?>],
-                                                borderColor: 'rgba(75, 192, 192, 1)',
-                                                borderWidth: 2,
-                                                fill: false
-                                            }]
-                                        },
-                                        options: {
-                                            scales: {
-                                                x: {
-                                                    title: {
-                                                        display: true,
-                                                        text: 'Período (MM-YYYY)'
-                                                    }
+                                <script>
+                                    document.addEventListener('DOMContentLoaded', function () {
+                                        const ctx = document.getElementById('graficoRelatorio').getContext('2d');
+                                        const tipo = '<?= addslashes($tipo_relatorio) ?>';
+                                        const labels = <?= json_encode(array_column($resultados, $tipo === 'tendencias' ? 'mes' : 'produto')) ?>;
+                                        const valores = <?= json_encode(
+                                            array_map(
+                                                fn($r) => $tipo === 'valor' ? (float)$r['valor_total'] : 
+                                                         ($tipo === 'tendencias' ? (int)$r['total_movimentado'] : 
+                                                          (int)($r['total_consumido'] ?? $r['total_reposto'])),
+                                                $resultados
+                                            )
+                                        ) ?>;
+
+                                        // Limitar a 10 itens para evitar poluição visual
+                                        const maxItens = 10;
+                                        const exibirLabels = labels.length <= maxItens ? labels : labels.slice(0, maxItens);
+                                        const exibirValores = labels.length <= maxItens ? valores : valores.slice(0, maxItens);
+
+                                        let config;
+
+                                        if (tipo === 'tendencias') {
+                                            config = {
+                                                type: 'line',
+                                                data: {
+                                                    labels: exibirLabels,
+                                                    datasets: [{
+                                                        label: 'Movimentação',
+                                                        data: exibirValores,
+                                                        borderColor: '#4e73df',
+                                                        backgroundColor: 'rgba(78, 115, 223, 0.1)',
+                                                        borderWidth: 2,
+                                                        fill: true,
+                                                        tension: 0.3
+                                                    }]
                                                 },
-                                                y: {
-                                                    beginAtZero: true,
-                                                    title: {
-                                                        display: true,
-                                                        text: 'Quantidade'
+                                                options: {
+                                                    responsive: true,
+                                                    plugins: { legend: { display: true } },
+                                                    scales: {
+                                                        y: { beginAtZero: true, title: { display: true, text: 'Quantidade' } },
+                                                        x: { title: { display: true, text: 'Período (MM-YYYY)' } }
                                                     }
                                                 }
-                                            }
+                                            };
+                                        } else if (tipo === 'valor') {
+                                            config = {
+                                                type: 'doughnut',
+                                                data: {
+                                                    labels: exibirLabels,
+                                                    datasets: [{
+                                                        data: exibirValores,
+                                                        backgroundColor: [
+                                                            '#4e73df', '#1cc88a', '#36b9cc', '#f6c23e', '#e74a3b',
+                                                            '#858796', '#9b59b6', '#3498db', '#2ecc71', '#e67e22'
+                                                        ],
+                                                        borderWidth: 2,
+                                                        borderColor: '#fff'
+                                                    }]
+                                                },
+                                                options: {
+                                                    responsive: true,
+                                                    plugins: {
+                                                        legend: { position: 'right' },
+                                                        tooltip: {
+                                                            callbacks: {
+                                                                label: (item) => `R$ ${item.raw.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            };
+                                        } else {
+                                            config = {
+                                                type: 'bar',
+                                                data: {
+                                                    labels: exibirLabels,
+                                                    datasets: [{
+                                                        label: tipo === 'consumo' ? 'Consumido' : 'Reposto',
+                                                        data: exibirValores,
+                                                        backgroundColor: '#4e73df',
+                                                        borderColor: '#3a5ecf',
+                                                        borderWidth: 1
+                                                    }]
+                                                },
+                                                options: {
+                                                    indexAxis: 'y',
+                                                    responsive: true,
+                                                    plugins: { legend: { display: false } },
+                                                    scales: {
+                                                        x: { beginAtZero: true, title: { display: true, text: 'Quantidade' } }
+                                                    }
+                                                }
+                                            };
                                         }
+
+                                        new Chart(ctx, config);
                                     });
-                                });
-                            </script>
-                        <?php endif; ?>
+                                </script>
+                            </div>
+                        </div>
                     <?php else: ?>
-                        <p>Nenhum resultado disponível.</p>
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle me-2"></i>
+                            Nenhum resultado disponível. Preencha os filtros e clique em "Gerar Relatório".
+                        </div>
                     <?php endif; ?>
                 </div>
-            </div>
-        </main>
+            </main>
+        </div>
     </div>
-    <script src="js/scripts.js"></script>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+document.addEventListener('DOMContentLoaded', function () {
+    const ctx = document.getElementById('graficoRelatorio').getContext('2d');
+    const tipo = '<?= addslashes($tipo_relatorio ?? '') ?>';
+    
+    // Preparar labels e valores de forma segura
+    const labels = [];
+    const valores = [];
+    
+    <?php foreach ($resultados as $r): ?>
+        <?php if ($tipo_relatorio === 'tendencias'): ?>
+            labels.push('<?= addslashes($r['mes']) ?>');
+            valores.push(<?= (int)$r['total_movimentado'] ?>);
+        <?php elseif ($tipo_relatorio === 'valor'): ?>
+            labels.push('<?= addslashes($r['produto']) ?>');
+            valores.push(<?= (float)$r['valor_total'] ?>);
+        <?php else: ?>
+            labels.push('<?= addslashes($r['produto']) ?>');
+            valores.push(<?= (int)($r['total_consumido'] ?? $r['total_reposto']) ?>);
+        <?php endif; ?>
+    <?php endforeach; ?>
+
+    // Limitar a 10 itens
+    const maxItens = 10;
+    const exibirLabels = labels.length <= maxItens ? labels : labels.slice(0, maxItens);
+    const exibirValores = labels.length <= maxItens ? valores : valores.slice(0, maxItens);
+
+    let config;
+
+    if (tipo === 'tendencias') {
+        config = {
+            type: 'line',
+            data: {
+                labels: exibirLabels,
+                datasets: [{
+                    label: 'Movimentação',
+                    data: exibirValores,
+                    borderColor: '#4e73df',
+                    backgroundColor: 'rgba(78, 115, 223, 0.1)',
+                    borderWidth: 2,
+                    fill: true,
+                    tension: 0.3
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: { legend: { display: true } },
+                scales: {
+                    y: { beginAtZero: true, title: { display: true, text: 'Quantidade' } },
+                    x: { title: { display: true, text: 'Período (MM-YYYY)' } }
+                }
+            }
+        };
+    } else if (tipo === 'valor') {
+        config = {
+            type: 'doughnut',
+            data: {
+                labels: exibirLabels,
+                datasets: [{
+                    data: exibirValores,
+                    backgroundColor: [
+                        '#4e73df', '#1cc88a', '#36b9cc', '#f6c23e', '#e74a3b',
+                        '#858796', '#9b59b6', '#3498db', '#2ecc71', '#e67e22'
+                    ],
+                    borderWidth: 2,
+                    borderColor: '#fff'
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: { position: 'right' },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return 'R$ ' + context.raw.toLocaleString('pt-BR', { minimumFractionDigits: 2 });
+                            }
+                        }
+                    }
+                }
+            }
+        };
+    } else {
+        config = {
+            type: 'bar',
+            data: {
+                labels: exibirLabels,
+                datasets: [{
+                    label: tipo === 'consumo' ? 'Consumido' : 'Reposto',
+                    data: exibirValores,
+                    backgroundColor: '#4e73df',
+                    borderColor: '#3a5ecf',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                indexAxis: 'y',
+                responsive: true,
+                plugins: { legend: { display: false } },
+                scales: {
+                    x: { beginAtZero: true, title: { display: true, text: 'Quantidade' } }
+                }
+            }
+        };
+    }
+
+    new Chart(ctx, config);
+});
+</script>
 </body>
+
 </html>

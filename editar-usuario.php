@@ -51,31 +51,92 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
 <!DOCTYPE html>
 <html lang="pt-br">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Editar Usuário</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <!-- Seu CSS personalizado -->
     <link rel="stylesheet" href="css/style.css">
 </head>
-<body>
-    <div class="container">
-          <!-- Sidebar -->
-          <?php include_once 'includes/sidebar.php'; ?>
 
-        <!-- Conteúdo Principal -->
-        <main class="content">
-            <h2>Editar Usuário</h2>
-            <form method="POST">
-                <input type="text" name="nome" placeholder="Nome do Usuário" value="<?= htmlspecialchars($usuario['nome']) ?>" required>
-                <input type="text" name="login" placeholder="Login do Usuário" value="<?= htmlspecialchars($usuario['login']) ?>" required>
-                <input type="password" name="senha" placeholder="Nova Senha (deixe em branco para manter)">
-                <select name="nivel_acesso" required>
-                    <option value="admin" <?= $usuario['nivel_acesso'] == 'admin' ? 'selected' : '' ?>>Admin</option>
-                    <option value="usuario" <?= $usuario['nivel_acesso'] == 'usuario' ? 'selected' : '' ?>>Usuário</option>
-                </select>
-                <button type="submit">Salvar Alterações</button>
-            </form>
-        </main>
+<body>
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Sidebar -->
+            <?php include_once 'includes/sidebar.php'; ?>
+
+            <!-- Conteúdo Principal -->
+            <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4 py-4">
+                <!-- Cabeçalho -->
+                <header class="d-flex justify-content-between align-items-center mb-4">
+                    <!-- Botão de menu (móvel) -->
+                    <button class="btn btn-outline-dark d-md-none me-2" id="sidebarToggle">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                    <div>
+                        <img src="https://bluefocus.com.br/sites/default/files/styles/medium/public/estoque.png?itok=1yVi8VcO" alt="Logo" width="50">
+                    </div>
+                    <div class="dropdown">
+                        <a href="#" class="d-flex align-items-center text-decoration-none dropdown-toggle text-dark" id="dropdownUser" data-bs-toggle="dropdown" aria-expanded="false">
+                            <span class="fw-bold"><?= htmlspecialchars($_SESSION['nome']) ?></span>
+                        </a>
+                        <ul class="dropdown-menu text-small shadow" aria-labelledby="dropdownUser">
+                            <li><a class="dropdown-item" href="editar-perfil.php">Editar Perfil</a></li>
+                            <li>
+                                <hr class="dropdown-divider">
+                            </li>
+                            <li><a class="dropdown-item" href="logout.php">Sair</a></li>
+                        </ul>
+                    </div>
+                </header>
+
+                <h2 class="mb-4">Editar Usuário</h2>
+
+                <div class="card shadow mb-4">
+                    <div class="card-body">
+                        <form method="POST">
+                            <div class="mb-3">
+                                <label for="nome" class="form-label">Nome Completo <span class="text-danger">*</span></label>
+                                <input type="text" name="nome" id="nome" class="form-control" value="<?= htmlspecialchars($usuario['nome']) ?>" required>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="login" class="form-label">Login (usuário) <span class="text-danger">*</span></label>
+                                <input type="text" name="login" id="login" class="form-control" value="<?= htmlspecialchars($usuario['login']) ?>" required>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="senha" class="form-label">Nova Senha (deixe em branco para manter)</label>
+                                <input type="password" name="senha" id="senha" class="form-control">
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="nivel_acesso" class="form-label">Nível de Acesso <span class="text-danger">*</span></label>
+                                <select name="nivel_acesso" id="nivel_acesso" class="form-select" required>
+                                    <option value="admin" <?= $usuario['nivel_acesso'] == 'admin' ? 'selected' : '' ?>>Administrador</option>
+                                    <option value="usuario" <?= $usuario['nivel_acesso'] == 'usuario' ? 'selected' : '' ?>>Usuário Comum</option>
+                                </select>
+                            </div>
+
+                            <button type="submit" class="btn btn-warning">
+                                <i class="fas fa-save"></i> Salvar Alterações
+                            </button>
+                            <a href="listagem-usuarios.php" class="btn btn-secondary">Cancelar</a>
+                        </form>
+                    </div>
+                </div>
+            </main>
+        </div>
     </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="js/scripts.js"></script>
 </body>
+
 </html>
