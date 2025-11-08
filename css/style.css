@@ -419,6 +419,10 @@ table td a:hover {
         display: none;
     }
 
+    .cat-teste{
+        color: #d6d1d1 !important;
+    } 
+
     .mobile-message{
         display: inline;
     }

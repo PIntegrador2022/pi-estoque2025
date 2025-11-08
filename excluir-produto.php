@@ -14,13 +14,17 @@ if (!isset($_GET['id'])) {
     exit;
 }
 
-$id_produto = $_GET['id'];
+$id_produto = (int)$_GET['id'];
 
-// Exclui o produto do banco de dados
+// Primeiro: exclui todas as movimentações associadas ao produto
+$stmt = $pdo->prepare("DELETE FROM movimentacoes WHERE produto_id = ?");
+$stmt->execute([$id_produto]);
+
+// Depois: exclui o produto
 $stmt = $pdo->prepare("DELETE FROM produtos WHERE id = ?");
 $stmt->execute([$id_produto]);
 
-// Redireciona de volta para o dashboard após a exclusão
-header("Location: dashboard.php");
+// Redireciona para a listagem de produtos (mais lógico que o dashboard)
+header("Location: listagem-produtos.php?msg=produto_excluido");
 exit;
 ?>

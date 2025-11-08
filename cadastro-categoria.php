@@ -81,7 +81,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                             <div class="mb-3">
                                 <label for="nome" class="form-label">Nome da Categoria <span class="text-danger">*</span></label>
                                 <input type="text" name="nome" id="nome" class="form-control" required>
-                                <div class="form-text">Ex: Verão, Inverno, Moda Praia, etc.</div>
+                                <div class="mb-2" style="color: d6d1d1;">Ex: Smartphone, notebook, acessórios, etc.</div>
                             </div>
 
                             <button type="submit" class="btn btn-primary">

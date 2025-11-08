@@ -13,19 +13,22 @@ $stmt = $pdo->prepare("SELECT nome FROM usuarios WHERE id = ?");
 $stmt->execute([$_SESSION['usuario_id']]);
 $usuario_logado = $stmt->fetch(PDO::FETCH_ASSOC);
 
+
 // Processa o formulário de cadastro de produto
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $nome = $_POST['nome'];
-    $descricao = $_POST['descricao'];
-    $quantidade = $_POST['quantidade'];
-    $preco = $_POST['preco'];
+    $descricao = $_POST['descricao'] ?? '';
+    $quantidade = (int)$_POST['quantidade'];
+    $preco = (float)$_POST['preco'];
+    $estoque_minimo = (int)$_POST['estoque_minimo'];
+    $categoria_id = !empty($_POST['categoria_id']) ? (int)$_POST['categoria_id'] : null;
 
     // Insere o produto no banco de dados
-    $stmt = $pdo->prepare("INSERT INTO produtos (nome, descricao, quantidade, preco) VALUES (?, ?, ?, ?)");
-    $stmt->execute([$nome, $descricao, $quantidade, $preco]);
+    $stmt = $pdo->prepare("INSERT INTO produtos (nome, descricao, quantidade, preco, estoque_minimo, categoria_id) VALUES (?, ?, ?, ?, ?, ?)");
+    $stmt->execute([$nome, $descricao, $quantidade, $preco, $estoque_minimo, $categoria_id]);
 
-    // Redireciona para o dashboard após o cadastro
-    header("Location: dashboard.php");
+    // Redireciona para a listagem de produtos após o cadastro
+    header("Location: listagem-produtos.php");
     exit;
 }
 ?>
